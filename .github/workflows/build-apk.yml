@@ -1,0 +1,69 @@
+name: Build Vesper APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Extract Vesper project
+        run: |
+          mkdir vesper-project
+          unzip -q "Vesper v10 project.zip" -d vesper-project
+
+      - name: Find web project
+        run: |
+          find vesper-project -maxdepth 3 -type f | head -100
+
+      - name: Setup Capacitor
+        run: |
+          cd vesper-project
+
+          PROJECT_DIR=$(find . -name "index.html" -type f | head -1 | xargs dirname)
+
+          echo "Project directory: $PROJECT_DIR"
+
+          cd "$PROJECT_DIR"
+
+          npm init -y
+
+          npm install @capacitor/core @capacitor/android
+          npm install -D @capacitor/cli
+
+          npx cap init Vesper com.nandaperspective.vesper --web-dir=.
+
+          npx cap add android
+
+      - name: Build APK
+        run: |
+          cd vesper-project
+          PROJECT_DIR=$(find . -name "index.html" -type f | head -1 | xargs dirname)
+          cd "$PROJECT_DIR"
+
+          npx cap copy android
+
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vesper-APK
+          path: "vesper-project/**/build/outputs/apk/debug/*.apk"
