@@ -25,7 +25,7 @@ jobs:
       - name: Extract Vesper project
         run: |
           mkdir vesper-project
-          unzip -q "Vesper v10 project.zip" -d vesper-project
+          unzip -q "VESPER-v16-project.zip" -d vesper-project
 
       - name: Find web project
         run: |
