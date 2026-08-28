@@ -22,42 +22,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Extract Vesper project
+      - name: Install dependencies & Setup Android
         run: |
-          mkdir vesper-project
-          unzip -q "VESPER-v16-project.zip" -d vesper-project
-
-      - name: Find web project
-        run: |
-          find vesper-project -maxdepth 3 -type f | head -100
-
-      - name: Setup Capacitor
-        run: |
-          cd vesper-project
-
-          PROJECT_DIR=$(find . -name "index.html" -type f | head -1 | xargs dirname)
-
-          echo "Project directory: $PROJECT_DIR"
-
-          cd "$PROJECT_DIR"
-
-          npm init -y
-
-          npm install @capacitor/core @capacitor/android
-          npm install -D @capacitor/cli
-
-          npx cap init Vesper com.nandaperspective.vesper --web-dir=.
-
-          npx cap add android
+          npm ci || npm install
+          npx cap add android || true
+          npx cap sync android
 
       - name: Build APK
         run: |
-          cd vesper-project
-          PROJECT_DIR=$(find . -name "index.html" -type f | head -1 | xargs dirname)
-          cd "$PROJECT_DIR"
-
-          npx cap copy android
-
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -66,4 +38,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Vesper-APK
-          path: "vesper-project/**/build/outputs/apk/debug/*.apk"
+          path: android/app/build/outputs/apk/debug/*.apk
