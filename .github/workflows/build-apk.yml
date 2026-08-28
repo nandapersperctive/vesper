@@ -24,13 +24,14 @@ jobs:
 
       - name: Install dependencies & Setup Android
         run: |
-          npm ci || npm install
+          cd vesper
+          npm install
           npx cap add android || true
           npx cap sync android
 
       - name: Build APK
         run: |
-          cd android
+          cd vesper/android
           chmod +x gradlew
           ./gradlew assembleDebug
 
@@ -38,4 +39,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Vesper-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: vesper/android/app/build/outputs/apk/debug/*.apk
